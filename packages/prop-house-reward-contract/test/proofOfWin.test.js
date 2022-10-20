@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
-describe('Prop House Testing', async () => {
-  let propHouse;
+describe('Prop of Win Testing', async () => {
+  let proofOfWin;
   let owner;
   let nonOwner;
 
@@ -27,29 +27,29 @@ describe('Prop House Testing', async () => {
   before(async () => {
     [owner, nonOwner] = await ethers.getSigners();
 
-    const propHouseFactory = await ethers.getContractFactory('PropHouse');
-    propHouse = await propHouseFactory.deploy();
+    const proofOfWinFactory = await ethers.getContractFactory('ProofOfWin');
+    proofOfWin = await proofOfWinFactory.deploy();
 
-    domain.verifyingContract = propHouse.address;
+    domain.verifyingContract = proofOfWin.address;
   });
 
   describe('Deployment', async () => {
     it('should deployed', async function () {
-      expect(propHouse.address).to.not.equal('');
+      expect(proofOfWin.address).to.not.equal('');
     });
   });
 
   describe('Testing ERC1155 functionality', async () => {
     it('should set contract URI', async () => {
-      await propHouse.setContractURIHash('ipfs://qm6yUiaiak');
+      await proofOfWin.setContractURIHash('ipfs://qm6yUiaiak');
 
-      expect(await propHouse.contractURI()).to.eq('ipfs://qm6yUiaiak');
+      expect(await proofOfWin.contractURI()).to.eq('ipfs://qm6yUiaiak');
     });
 
     it('should set token URI', async () => {
-      await propHouse.setBaseURI('ipfs://qm6yUiaiak/');
+      await proofOfWin.setBaseURI('ipfs://qm6yUiaiak/');
 
-      expect(await propHouse.baseTokenURI()).to.eq('ipfs://qm6yUiaiak/');
+      expect(await proofOfWin.baseTokenURI()).to.eq('ipfs://qm6yUiaiak/');
     });
   });
 
@@ -61,7 +61,7 @@ describe('Prop House Testing', async () => {
         winner: nonOwner.address,
       });
 
-      await expect(propHouse.mint(id, tokenId, nonOwner.address, signature)).to.be.revertedWith(
+      await expect(proofOfWin.mint(id, tokenId, nonOwner.address, signature)).to.be.revertedWith(
         'Invalid signature',
       );
     });
@@ -73,7 +73,7 @@ describe('Prop House Testing', async () => {
         winner: nonOwner.address,
       });
 
-      await expect(propHouse.mint(id, tokenId, nonOwner.address, signature)).to.be.revertedWith(
+      await expect(proofOfWin.mint(id, tokenId, nonOwner.address, signature)).to.be.revertedWith(
         'Wrong winner',
       );
     });
@@ -85,8 +85,8 @@ describe('Prop House Testing', async () => {
         winner: owner.address,
       });
 
-      await expect(propHouse.mint(id, tokenId, owner.address, signature)).not.to.be.reverted;
-      expect(await propHouse.balanceOf(owner.address, 1)).to.eq(ethers.BigNumber.from('1'));
+      await expect(proofOfWin.mint(id, tokenId, owner.address, signature)).not.to.be.reverted;
+      expect(await proofOfWin.balanceOf(owner.address, 1)).to.eq(ethers.BigNumber.from('1'));
     });
 
     it('Mint: should revert Has minted', async () => {
@@ -96,7 +96,7 @@ describe('Prop House Testing', async () => {
         winner: owner.address,
       });
 
-      await expect(propHouse.mint(id, tokenId, owner.address, signature)).to.be.revertedWith(
+      await expect(proofOfWin.mint(id, tokenId, owner.address, signature)).to.be.revertedWith(
         'Has minted',
       );
     });
@@ -104,13 +104,13 @@ describe('Prop House Testing', async () => {
 
   describe('Testing Signer', async () => {
     it('should signer = msg.sender', async () => {
-      expect(await propHouse.signer()).to.eq(owner.address);
+      expect(await proofOfWin.signer()).to.eq(owner.address);
     });
 
     it('should set signer', async () => {
-      await propHouse.setSigner(nonOwner.address);
+      await proofOfWin.setSigner(nonOwner.address);
 
-      expect(await propHouse.signer()).to.eq(nonOwner.address);
+      expect(await proofOfWin.signer()).to.eq(nonOwner.address);
     });
   });
 });

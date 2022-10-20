@@ -1,11 +1,11 @@
 const { task } = require('hardhat/config');
 
 task('deploy', 'Deploy contract').setAction(async ({}, { ethers }) => {
-  const propHouseFactory = await ethers.getContractFactory('PropHouse');
+  const proofOfWinFactory = await ethers.getContractFactory('ProofOfWin');
 
-  const propHouse = await propHouseFactory.deploy({ gasLimit: 3000000 });
+  const proofOfWin = await proofOfWinFactory.deploy({ gasLimit: 3000000 });
 
-  await propHouse.deployed();
+  await proofOfWin.deployed();
 
-  console.log('Contract deployed to: ', propHouse.address);
+  console.log('Contract deployed to: ', proofOfWin.address);
 });

@@ -1,15 +1,16 @@
 //SPDX-License-Identifier: MIT
 
-/// @title The Prop House Proof of Winner main contract
+/// @title The Prop House's Proof of Win main contract
 
 pragma solidity ^0.8.15;
 
 import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol';
 import '@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol';
 import '@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol';
 
-contract PropHouse is ERC1155, EIP712, Ownable, ERC1155Supply {
+contract ProofOfWin is ERC1155, EIP712, Ownable, ERC1155Burnable, ERC1155Supply {
     using ECDSA for bytes32;
 
     error FunctionNotSupported();
@@ -31,8 +32,10 @@ contract PropHouse is ERC1155, EIP712, Ownable, ERC1155Supply {
     }
 
     /// @notice minting logic
-    /// @param id nounsId
-    /// @param tokenId block number for seeds
+    /// @param id auction id
+    /// @param tokenId token Id
+    /// @param winner winner address
+    /// @param signature EIP-712 signature
     function mint(
         uint256 id,
         uint256 tokenId,
@@ -78,12 +81,12 @@ contract PropHouse is ERC1155, EIP712, Ownable, ERC1155Supply {
         baseTokenURI = _baseTokenURI;
     }
 
-    /// @notice Set signer address
+    /// @notice Set EIP-712 signer address
     function setSigner(address _signer) external onlyOwner {
         signer = _signer;
     }
 
-    /// @notice Set the _contractURIHash.
+    /// @notice Set the contract URI
     function setContractURIHash(string memory _contractURIHash) external onlyOwner {
         contractURIHash = _contractURIHash;
     }
@@ -104,6 +107,7 @@ contract PropHouse is ERC1155, EIP712, Ownable, ERC1155Supply {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
+    //verify EIP-712 signature
     function _verify(
         uint256 id,
         uint256 tokenId,
