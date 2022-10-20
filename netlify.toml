@@ -6,3 +6,12 @@
 
 [context.production.environment]
     REACT_APP_NODE_ENV = "production"
+
+[functions]
+  directory = "packages/prop-house-reward-api/functions"
+
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover.
+  for = "/*"
+    [headers.values]
+    Access-Control-Allow-Origin = "*"

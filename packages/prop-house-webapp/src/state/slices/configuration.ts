@@ -9,13 +9,11 @@ export interface ConfigurationSlice {
 const initialState: ConfigurationSlice = {
   etherscanHost: 'https://etherscan.io',
   backendHost:
-    process.env.REACT_APP_NODE_ENV === 'production' &&
-    process.env.REACT_APP_PROD_BACKEND_URI
+    process.env.REACT_APP_NODE_ENV === 'production' && process.env.REACT_APP_PROD_BACKEND_URI
       ? process.env.REACT_APP_PROD_BACKEND_URI
-      : process.env.REACT_APP_NODE_ENV === 'development' &&
-        process.env.REACT_APP_DEV_BACKEND_URI
+      : process.env.REACT_APP_NODE_ENV === 'development' && process.env.REACT_APP_DEV_BACKEND_URI
       ? process.env.REACT_APP_DEV_BACKEND_URI
-      : 'http://localhost:3000',
+      : 'https://prod.backend.prop.house',
   displayAdmin: process.env.REACT_APP_NODE_ENV === 'production' ? false : true,
 };
 
