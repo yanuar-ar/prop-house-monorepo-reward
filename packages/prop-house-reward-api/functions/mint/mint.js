@@ -1,6 +1,7 @@
 const ethers = require('ethers');
 const { checkWinner, headers } = require('../helpers');
 
+// EIP-712 domain
 const domain = {
   name: process.env.SIGNING_DOMAIN_NAME,
   version: process.env.SIGNING_DOMAIN_VERSION,
@@ -8,6 +9,7 @@ const domain = {
   verifyingContract: process.env.CONTRACT_ADDRESS,
 };
 
+// EIP-712 types
 const types = {
   Minter: [
     { name: 'id', type: 'uint256' },
@@ -17,7 +19,7 @@ const types = {
 };
 
 const handler = async event => {
-  // should be POST
+  // should be GET
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 501,

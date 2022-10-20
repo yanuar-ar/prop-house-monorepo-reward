@@ -21,13 +21,12 @@ const checkWinner = async (id, address) => {
 
   const winners = [];
 
+  // calculate winners
   proposals
     .slice()
     .sort((a, b) => (Number(a.voteCount) < Number(b.voteCount) ? 1 : -1))
     .slice(0, auction.numWinners)
     .map(p => winners.push(p.address));
-
-  console.log(winners);
 
   return {
     id: id,
@@ -36,6 +35,7 @@ const checkWinner = async (id, address) => {
   };
 };
 
+// allow CORS
 const headers = {
   'Content-Type': 'application/json; charset=utf-8', //optional
   'Access-Control-Allow-Origin': '*',

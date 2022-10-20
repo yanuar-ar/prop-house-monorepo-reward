@@ -1,7 +1,7 @@
 const { checkWinner, headers } = require('../helpers');
 
 const handler = async event => {
-  // should be POST
+  // should be GET
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 501,
