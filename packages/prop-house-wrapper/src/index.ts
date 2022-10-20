@@ -236,4 +236,26 @@ export class PropHouseWrapper {
       throw e.response.data.message;
     }
   }
+
+  //====================== reward =====================================================
+
+  async checkWinner(address: string, id: number) {
+    try {
+      return (
+        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}?id=${id}&address=${address}`)
+      ).data;
+    } catch (e: any) {
+      throw e.response.data.message;
+    }
+  }
+
+  async createMint(address: string, id: number) {
+    try {
+      return (
+        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}?id=${id}&address=${address}`)
+      ).data;
+    } catch (e: any) {
+      throw e.response.data.message;
+    }
+  }
 }
