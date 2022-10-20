@@ -10,14 +10,14 @@ const ClaimRewardModule = () => {
           <VoteIcon />
         </div>
         <div className={classes.textContainer}>
-          <p className={classes.title}>Claim Reward</p>
+          <p className={classes.title}>Get Reward</p>
         </div>
       </div>
 
       <hr className={classes.divider} />
 
       <p className={clsx(classes.sideCardBody, classes.winnersText)}>
-        Winners are eligible to claim reward.
+        Winners are eligible to mint Proof of Win.
       </p>
     </>
   );

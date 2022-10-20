@@ -62,11 +62,10 @@ const RoundModules: React.FC<{
   const getVoteTotal = () =>
     proposals && proposals.reduce((total, prop) => (total = total + Number(prop.voteCount)), 0);
 
+  // Proof of Win Contract
   const propHouseInterface = new utils.Interface(propHouseABI);
-  const propHouseContractAddress = '0xf5ddc3Ab08B4f9e6907affba84C3968ed3E11A78';
-  const propHouseContract = new Contract(propHouseContractAddress, propHouseInterface);
-
-  // window.alert(JSON.stringify(propHouseContract));
+  const propHouseContractAddress = process.env.REACT_APP_PROOF_OF_WIN_CONTRACT;
+  const propHouseContract = new Contract(propHouseContractAddress || '', propHouseInterface);
 
   const { send: mint, state: mintState } = useContractFunction(propHouseContract as any, 'mint');
 
@@ -75,12 +74,11 @@ const RoundModules: React.FC<{
 
     setLoading(true);
     mint(auction.id, data.tokenId, account, data.signature);
-    // window.alert(data.signature);
   };
 
   useEffect(() => {
     if (mintState.status === 'Mining') {
-      window.alert('Transaction submitted');
+      window.alert('Transaction submitted.');
     }
 
     if (mintState.status === 'Fail') {
@@ -122,9 +120,9 @@ const RoundModules: React.FC<{
     //check reward eligible
     if (account) {
       const checkWinner = async () => {
-        const data = await backendClient.current.checkWinner(account, auction.id);
+        const { winner } = await backendClient.current.checkWinner(account, auction.id);
 
-        setWinner(data.winner);
+        setWinner(winner);
       };
       checkWinner();
     }
@@ -219,7 +217,7 @@ const RoundModules: React.FC<{
             {/* IF WINNER */}
             {isRoundOver && account && chainId === Number(CHAIN_ID) && winner ? (
               <Button
-                text={loading ? 'Loading...' : 'Mint Reward'}
+                text={loading ? 'Loading...' : 'Mint Proof of Win'}
                 bgColor={ButtonColor.Purple}
                 onClick={() => mintReward()}
                 disabled={loading}
