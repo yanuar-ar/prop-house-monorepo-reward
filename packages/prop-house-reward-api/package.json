@@ -1,0 +1,13 @@
+{
+  "name": "prop-house-reward-api",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^5.7.0",
+    "fetch": "^1.1.0",
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.0.0",
+    "ioredis": "^5.2.3",
+    "moment": "^2.29.4"
+  }
+}
