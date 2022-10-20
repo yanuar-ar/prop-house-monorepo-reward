@@ -237,7 +237,7 @@ export class PropHouseWrapper {
     }
   }
 
-  //====================== reward =====================================================
+  //====================== Proof of Win =====================================================
 
   async checkWinner(address: string, id: number) {
     try {
