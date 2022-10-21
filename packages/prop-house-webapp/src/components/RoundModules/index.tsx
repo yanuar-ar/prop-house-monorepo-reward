@@ -26,6 +26,8 @@ import ClaimRewardModule from '../ClaimRewardModule';
 import { Dispatch, SetStateAction, useEffect, useState, useRef } from 'react';
 import { isSameAddress } from '../../utils/isSameAddress';
 import { voteWeightForAllottedVotes } from '../../utils/voteWeightForAllottedVotes';
+import ErrorModal from '../ErrorModal';
+import SuccessModal from '../SuccessModal';
 
 const RoundModules: React.FC<{
   auction: StoredAuction;
@@ -50,6 +52,13 @@ const RoundModules: React.FC<{
 
   const [winner, setWinner] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState({
+    title: '',
+    message: '',
+    image: '',
+  });
 
   const backendHost = useAppSelector(state => state.configuration.backendHost);
   const backendClient = useRef(new PropHouseWrapper(backendHost, provider?.getSigner()));
@@ -77,23 +86,33 @@ const RoundModules: React.FC<{
   };
 
   useEffect(() => {
-    if (mintState.status === 'Mining') {
-      window.alert('Transaction submitted.');
-    }
+    // if (mintState.status === 'Mining') {
+    //   window.alert('Transaction submitted.');
+    // }
 
     if (mintState.status === 'Fail') {
       setLoading(false);
-      window.alert('Transaction Failed. Please try again.');
+      setErrorModalMessage({
+        title: 'Failed to submit transaction',
+        message: 'Please go back and try again.',
+        image: 'banana.png',
+      });
+      setShowErrorModal(true);
     }
 
     if (mintState.status === 'Exception') {
       setLoading(false);
-      window.alert(mintState?.errorMessage);
+      setErrorModalMessage({
+        title: 'Transaction reverted.',
+        message: mintState?.errorMessage || '',
+        image: 'banana.png',
+      });
+      setShowErrorModal(true);
     }
 
     if (mintState.status === 'Success') {
       setLoading(false);
-      window.alert('Mint success');
+      setShowSuccessModal(true);
     }
   }, [mintState]);
 
@@ -129,119 +148,138 @@ const RoundModules: React.FC<{
   }, [account, auction.id]);
 
   return (
-    <Col xl={4} className={clsx(classes.sideCards, classes.carousel, classes.breakOut)}>
-      {!auctionNotStarted && account && userProposals && userProposals.length > 0 && (
-        <UserPropCard
-          userProps={userProposals}
-          proposals={proposals}
-          numOfWinners={auction.numWinners}
-          status={auctionStatus(auction)}
-          winningIds={winningIds && winningIds}
+    <>
+      {showErrorModal && (
+        <ErrorModal
+          showErrorModal={showErrorModal}
+          setShowErrorModal={setShowErrorModal}
+          title={errorModalMessage.title}
+          message={errorModalMessage.message}
+          image={errorModalMessage.image}
         />
       )}
+      {showSuccessModal && (
+        <SuccessModal
+          showSuccessModal={showSuccessModal}
+          setShowSuccessModal={setShowSuccessModal}
+          numPropsVotedFor={0}
+          voteModal={false}
+        />
+      )}
+      <Col xl={4} className={clsx(classes.sideCards, classes.carousel, classes.breakOut)}>
+        {!auctionNotStarted && account && userProposals && userProposals.length > 0 && (
+          <UserPropCard
+            userProps={userProposals}
+            proposals={proposals}
+            numOfWinners={auction.numWinners}
+            status={auctionStatus(auction)}
+            winningIds={winningIds && winningIds}
+          />
+        )}
 
-      <Card
-        bgColor={CardBgColor.White}
-        borderRadius={CardBorderRadius.thirty}
-        classNames={classes.sidebarContainerCard}
-      >
-        {/* CONTENT */}
-        <div className={classes.content}>
-          {/* ACCEPTING PROPS */}
-          {isProposingWindow && (
-            <AcceptingPropsModule auction={auction} communityName={community.name} />
-          )}
-
-          {/* VOTING WINDOW */}
-          {isVotingWindow && (
-            <VotingModule communityName={community.name} totalVotes={getVoteTotal()} />
-          )}
-
-          {/* ROUND ENDED */}
-          {isRoundOver && (
-            <RoundOverModule
-              numOfProposals={proposals && proposals.length}
-              totalVotes={getVoteTotal()}
-            />
-          )}
-        </div>
-
-        {/* BUTTONS */}
-        <div className={classes.btnContainer}>
-          {/* ACCEPTING PROPS */}
-          {isProposingWindow &&
-            (account ? (
-              <Button
-                text={'Create your proposal'}
-                bgColor={ButtonColor.Green}
-                onClick={() => navigate('/create', { state: { auction, community } })}
-              />
-            ) : (
-              <Button text={'Connect to submit'} bgColor={ButtonColor.Pink} onClick={connect} />
-            ))}
-
-          {/* VOTING WINDOW, NOT CONNECTED */}
-          {isVotingWindow && !account && (
-            <Button text={'Connect to vote'} bgColor={ButtonColor.Pink} onClick={connect} />
-          )}
-
-          {/* VOTING PERIOD, CONNECTED, HAS VOTES */}
-          {isVotingWindow && account && votingPower ? (
-            <Button
-              text={'Submit votes'}
-              bgColor={ButtonColor.Purple}
-              onClick={() => setShowVotingModal(true)}
-              disabled={
-                voteWeightForAllottedVotes(voteAllotments) === 0 || submittedVotes === votingPower
-              }
-            />
-          ) : (
-            //  VOTING PERIOD, CONNECTED, HAS NO VOTES
-            <></>
-          )}
-        </div>
-      </Card>
-      {/* CLAIM REWARD */}
-      {isRoundOver && (
         <Card
           bgColor={CardBgColor.White}
           borderRadius={CardBorderRadius.thirty}
           classNames={classes.sidebarContainerCard}
         >
+          {/* CONTENT */}
           <div className={classes.content}>
-            <ClaimRewardModule />
-            {isRoundOver && !account && (
-              <Button text={'Connect to claim'} bgColor={ButtonColor.Pink} onClick={connect} />
+            {/* ACCEPTING PROPS */}
+            {isProposingWindow && (
+              <AcceptingPropsModule auction={auction} communityName={community.name} />
             )}
 
-            {/* IF WINNER */}
-            {isRoundOver && account && chainId === Number(CHAIN_ID) && winner ? (
+            {/* VOTING WINDOW */}
+            {isVotingWindow && (
+              <VotingModule communityName={community.name} totalVotes={getVoteTotal()} />
+            )}
+
+            {/* ROUND ENDED */}
+            {isRoundOver && (
+              <RoundOverModule
+                numOfProposals={proposals && proposals.length}
+                totalVotes={getVoteTotal()}
+              />
+            )}
+          </div>
+
+          {/* BUTTONS */}
+          <div className={classes.btnContainer}>
+            {/* ACCEPTING PROPS */}
+            {isProposingWindow &&
+              (account ? (
+                <Button
+                  text={'Create your proposal'}
+                  bgColor={ButtonColor.Green}
+                  onClick={() => navigate('/create', { state: { auction, community } })}
+                />
+              ) : (
+                <Button text={'Connect to submit'} bgColor={ButtonColor.Pink} onClick={connect} />
+              ))}
+
+            {/* VOTING WINDOW, NOT CONNECTED */}
+            {isVotingWindow && !account && (
+              <Button text={'Connect to vote'} bgColor={ButtonColor.Pink} onClick={connect} />
+            )}
+
+            {/* VOTING PERIOD, CONNECTED, HAS VOTES */}
+            {isVotingWindow && account && votingPower ? (
               <Button
-                text={loading ? 'Loading...' : 'Mint Proof of Win'}
+                text={'Submit votes'}
                 bgColor={ButtonColor.Purple}
-                onClick={() => mintReward()}
-                disabled={loading}
+                onClick={() => setShowVotingModal(true)}
+                disabled={
+                  voteWeightForAllottedVotes(voteAllotments) === 0 || submittedVotes === votingPower
+                }
               />
             ) : (
-              <></>
-            )}
-
-            {/* IF NOT WINNER */}
-            {isRoundOver && account && chainId === Number(CHAIN_ID) && !winner ? (
-              <Button text={'Not Winner'} bgColor={ButtonColor.Purple} disabled={true} />
-            ) : (
-              <></>
-            )}
-            {/* CHECK NETWORK */}
-            {isRoundOver && account && chainId !== Number(CHAIN_ID) ? (
-              <Button text={'Wrong Network !'} bgColor={ButtonColor.Pink} disabled={true} />
-            ) : (
+              //  VOTING PERIOD, CONNECTED, HAS NO VOTES
               <></>
             )}
           </div>
         </Card>
-      )}
-    </Col>
+        {/* CLAIM REWARD */}
+        {isRoundOver && (
+          <Card
+            bgColor={CardBgColor.White}
+            borderRadius={CardBorderRadius.thirty}
+            classNames={classes.sidebarContainerCard}
+          >
+            <div className={classes.content}>
+              <ClaimRewardModule />
+              {isRoundOver && !account && (
+                <Button text={'Connect to claim'} bgColor={ButtonColor.Pink} onClick={connect} />
+              )}
+
+              {/* IF WINNER */}
+              {isRoundOver && account && chainId === Number(CHAIN_ID) && winner ? (
+                <Button
+                  text={loading ? 'Loading...' : 'Mint Proof of Win'}
+                  bgColor={ButtonColor.Purple}
+                  onClick={() => mintReward()}
+                  disabled={loading}
+                />
+              ) : (
+                <></>
+              )}
+
+              {/* IF NOT WINNER */}
+              {isRoundOver && account && chainId === Number(CHAIN_ID) && !winner ? (
+                <Button text={'Not Winner'} bgColor={ButtonColor.Purple} disabled={true} />
+              ) : (
+                <></>
+              )}
+              {/* CHECK NETWORK */}
+              {isRoundOver && account && chainId !== Number(CHAIN_ID) ? (
+                <Button text={'Wrong Network !'} bgColor={ButtonColor.Pink} disabled={true} />
+              ) : (
+                <></>
+              )}
+            </div>
+          </Card>
+        )}
+      </Col>
+    </>
   );
 };
 export default RoundModules;

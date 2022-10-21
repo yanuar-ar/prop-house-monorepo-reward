@@ -150,6 +150,7 @@ const RoundContent: React.FC<{
           showSuccessModal={showSuccessModal}
           setShowSuccessModal={setShowSuccessModal}
           numPropsVotedFor={numPropsVotedFor}
+          voteModal={true}
         />
       )}
 
