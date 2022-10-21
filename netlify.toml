@@ -10,8 +10,6 @@
 [functions]
   directory = "packages/prop-house-reward-api/functions"
 
-[[headers]]
-  # Define which paths this specific [[headers]] block will cover.
-  for = "/*"
-    [headers.values]
-    Access-Control-Allow-Origin = "*"
+[build]
+  command = "yarn workspace prop-house-webapp build"
+  publish = "packages/prop-house-webapp/build"
