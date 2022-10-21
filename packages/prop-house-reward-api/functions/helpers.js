@@ -19,6 +19,26 @@ const auctionQuery = id => gql`
   }
 `;
 
+const voteQuery = id => gql`
+  {
+    auction(id: ${id}) {
+      proposals {
+        votes {
+          address
+          weight
+        }
+        id
+      }
+      id
+      community {
+        name
+          id
+      }
+      status
+    }
+  }
+`;
+
 const checkWinner = async (id, address) => {
   const { auction } = await request(process.env.GRAPHQL_URL, auctionQuery(id));
   const { proposals, status, community } = auction;
@@ -45,6 +65,34 @@ const checkWinner = async (id, address) => {
   };
 };
 
+const checkVoter = async (id, address) => {
+  const { auction } = await request(process.env.GRAPHQL_URL, voteQuery(id));
+  const { proposals, status, community } = auction;
+
+  let voter = false;
+  let weight = 0;
+  for (let proposal of proposals) {
+    const { votes } = proposal;
+    votes.forEach(vote => {
+      if (vote.address === address) weight += vote.weight;
+    });
+  }
+
+  // if weight > 0
+  if (weight > 0) voter = true;
+
+  // only community =1
+  if (status !== 'Closed' || community.id !== 1) {
+    voter = false;
+  }
+
+  return {
+    id: id,
+    address: address,
+    voter: voter,
+  };
+};
+
 // allow CORS
 const headers = {
   'Content-Type': 'application/json; charset=utf-8', //optional
@@ -52,4 +100,5 @@ const headers = {
 };
 
 exports.checkWinner = checkWinner;
+exports.checkVoter = checkVoter;
 exports.headers = headers;

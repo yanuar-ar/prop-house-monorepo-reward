@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { MdOutlineCheckCircleOutline as VoteIcon } from 'react-icons/md';
-import classes from './ClaimRewardModule.module.css';
+import classes from './ClaimPOWModule.module.css';
 
-const ClaimRewardModule = () => {
+const ClaimPOWModule = () => {
   return (
     <>
       <div className={classes.sideCardHeader}>
@@ -23,4 +23,4 @@ const ClaimRewardModule = () => {
   );
 };
 
-export default ClaimRewardModule;
+export default ClaimPOWModule;

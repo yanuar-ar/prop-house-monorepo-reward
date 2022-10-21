@@ -1,12 +1,12 @@
 const ethers = require('ethers');
-const { checkWinner, headers } = require('../helpers');
+const { checkVoter, headers } = require('../helpers');
 
 // EIP-712 domain
 const domain = {
   name: process.env.SIGNING_DOMAIN_NAME,
   version: process.env.SIGNING_DOMAIN_VERSION,
   chainId: process.env.CHAIN_ID,
-  verifyingContract: process.env.PROOF_OF_WIN_CONTRACT_ADDRESS,
+  verifyingContract: process.env.PROOF_OF_VOTE_CONTRACT_ADDRESS,
 };
 
 // EIP-712 types
@@ -14,7 +14,7 @@ const types = {
   Minter: [
     { name: 'id', type: 'uint256' },
     { name: 'tokenId', type: 'uint256' },
-    { name: 'winner', type: 'address' },
+    { name: 'voter', type: 'address' },
   ],
 };
 
@@ -32,12 +32,12 @@ const handler = async event => {
     const address = event.queryStringParameters.address;
     const id = event.queryStringParameters.id;
 
-    const { winner } = await checkWinner(id, address);
+    const { voter } = await checkVoter(id, address);
 
     const tokenId = 1;
 
-    // if not winner
-    if (!winner) {
+    // if not voter
+    if (!voter) {
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -45,7 +45,7 @@ const handler = async event => {
           tokenId: -1,
           id: id,
           signature: '',
-          winner: false,
+          voter: false,
         }),
         headers,
       };
@@ -58,7 +58,7 @@ const handler = async event => {
     const signature = await signer._signTypedData(domain, types, {
       id: id,
       tokenId: tokenId,
-      winner: address,
+      voter: address,
     });
 
     return {
@@ -68,7 +68,7 @@ const handler = async event => {
         tokenId: tokenId,
         address: address,
         signature: signature,
-        winner: true,
+        voter: true,
       }),
       headers,
     };

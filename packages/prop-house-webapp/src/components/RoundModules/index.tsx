@@ -17,12 +17,14 @@ import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import useWeb3Modal from '../../hooks/useWeb3Modal';
 import getWinningIds from '../../utils/getWinningIds';
-import propHouseABI from '../../utils/prophouseABI.json';
+import proofOfWinABI from '../../utils/proofOfWinABI.json';
+import proofOfVoteABI from '../../utils/proofOfVoteABI.json';
 import UserPropCard from '../UserPropCard';
 import AcceptingPropsModule from '../AcceptingPropsModule';
 import VotingModule from '../VotingModule';
 import RoundOverModule from '../RoundOverModule';
-import ClaimRewardModule from '../ClaimRewardModule';
+import ClaimPOWModule from '../ClaimPOWModule';
+import ClaimPOVModule from '../ClaimPOVModule';
 import { Dispatch, SetStateAction, useEffect, useState, useRef } from 'react';
 import { isSameAddress } from '../../utils/isSameAddress';
 import { voteWeightForAllottedVotes } from '../../utils/voteWeightForAllottedVotes';
@@ -51,10 +53,16 @@ const RoundModules: React.FC<{
   const [userProposals, setUserProposals] = useState<StoredProposalWithVotes[]>();
 
   const [winner, setWinner] = useState(false);
+  const [voter, setVoter] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorModalMessage, setErrorModalMessage] = useState({
+    title: '',
+    message: '',
+    image: '',
+  });
+  const [successModalMessage, setSuccessModalMessage] = useState({
     title: '',
     message: '',
     image: '',
@@ -72,24 +80,37 @@ const RoundModules: React.FC<{
     proposals && proposals.reduce((total, prop) => (total = total + Number(prop.voteCount)), 0);
 
   // Proof of Win Contract
-  const propHouseInterface = new utils.Interface(propHouseABI);
-  const propHouseContractAddress = process.env.REACT_APP_PROOF_OF_WIN_CONTRACT;
-  const propHouseContract = new Contract(propHouseContractAddress || '', propHouseInterface);
+  const proofOfWinInterface = new utils.Interface(proofOfWinABI);
+  const proofOfWinContractAddress = process.env.REACT_APP_PROOF_OF_WIN_CONTRACT;
+  const proofOfWinContract = new Contract(proofOfWinContractAddress || '', proofOfWinInterface);
 
-  const { send: mint, state: mintState } = useContractFunction(propHouseContract as any, 'mint');
+  // Proof of Win Contract
+  const proofOfVoteInterface = new utils.Interface(proofOfVoteABI);
+  const proofOfVoteContractAddress = process.env.REACT_APP_PROOF_OF_VOTE_CONTRACT;
+  const proofOfVoteContract = new Contract(proofOfVoteContractAddress || '', proofOfVoteInterface);
 
-  const mintReward = async () => {
+  const { send: mint, state: mintState } = useContractFunction(proofOfWinContract as any, 'mint');
+
+  const { send: mintPOV, state: mintPOVState } = useContractFunction(
+    proofOfVoteContract as any,
+    'mint',
+  );
+
+  const mintProofOfWin = async () => {
     const data = await backendClient.current.createMint(account || '', auction.id);
 
     setLoading(true);
     mint(auction.id, data.tokenId, account, data.signature);
   };
 
-  useEffect(() => {
-    // if (mintState.status === 'Mining') {
-    //   window.alert('Transaction submitted.');
-    // }
+  const mintProofOfVote = async () => {
+    const data = await backendClient.current.createMintPOV(account || '', auction.id);
 
+    setLoading(true);
+    mintPOV(auction.id, data.tokenId, account, data.signature);
+  };
+
+  useEffect(() => {
     if (mintState.status === 'Fail') {
       setLoading(false);
       setErrorModalMessage({
@@ -112,9 +133,46 @@ const RoundModules: React.FC<{
 
     if (mintState.status === 'Success') {
       setLoading(false);
+      setSuccessModalMessage({
+        title: 'Mint Success.',
+        message: `You've successfully mint Proof of Win. Enjoy your Golden Noggle.`,
+        image: 'goldennoggles.png',
+      });
       setShowSuccessModal(true);
     }
   }, [mintState]);
+
+  useEffect(() => {
+    if (mintPOVState.status === 'Fail') {
+      setLoading(false);
+      setErrorModalMessage({
+        title: 'Failed to submit transaction',
+        message: 'Please go back and try again.',
+        image: 'banana.png',
+      });
+      setShowErrorModal(true);
+    }
+
+    if (mintPOVState.status === 'Exception') {
+      setLoading(false);
+      setErrorModalMessage({
+        title: 'Transaction reverted.',
+        message: mintPOVState?.errorMessage || '',
+        image: 'banana.png',
+      });
+      setShowErrorModal(true);
+    }
+
+    if (mintPOVState.status === 'Success') {
+      setLoading(false);
+      setSuccessModalMessage({
+        title: 'Mint Success.',
+        message: `You've successfully mint Proof of Vote`,
+        image: 'rednoggles.png',
+      });
+      setShowSuccessModal(true);
+    }
+  }, [mintPOVState]);
 
   useEffect(() => {
     backendClient.current = new PropHouseWrapper(backendHost, provider?.getSigner());
@@ -138,12 +196,14 @@ const RoundModules: React.FC<{
   useEffect(() => {
     //check reward eligible
     if (account) {
-      const checkWinner = async () => {
+      const checkWinnerVoter = async () => {
         const { winner } = await backendClient.current.checkWinner(account, auction.id);
+        const { voter } = await backendClient.current.checkVoter(account, auction.id);
 
+        setVoter(voter);
         setWinner(winner);
       };
-      checkWinner();
+      checkWinnerVoter();
     }
   }, [account, auction.id]);
 
@@ -164,6 +224,9 @@ const RoundModules: React.FC<{
           setShowSuccessModal={setShowSuccessModal}
           numPropsVotedFor={0}
           voteModal={false}
+          title={successModalMessage.title}
+          message={successModalMessage.message}
+          image={successModalMessage.image}
         />
       )}
       <Col xl={4} className={clsx(classes.sideCards, classes.carousel, classes.breakOut)}>
@@ -246,7 +309,7 @@ const RoundModules: React.FC<{
             classNames={classes.sidebarContainerCard}
           >
             <div className={classes.content}>
-              <ClaimRewardModule />
+              <ClaimPOWModule />
               {isRoundOver && !account && (
                 <Button text={'Connect to claim'} bgColor={ButtonColor.Pink} onClick={connect} />
               )}
@@ -256,7 +319,7 @@ const RoundModules: React.FC<{
                 <Button
                   text={loading ? 'Loading...' : 'Mint Proof of Win'}
                   bgColor={ButtonColor.Purple}
-                  onClick={() => mintReward()}
+                  onClick={() => mintProofOfWin()}
                   disabled={loading}
                 />
               ) : (
@@ -266,6 +329,46 @@ const RoundModules: React.FC<{
               {/* IF NOT WINNER */}
               {isRoundOver && account && chainId === Number(CHAIN_ID) && !winner ? (
                 <Button text={'Not Winner'} bgColor={ButtonColor.Purple} disabled={true} />
+              ) : (
+                <></>
+              )}
+              {/* CHECK NETWORK */}
+              {isRoundOver && account && chainId !== Number(CHAIN_ID) ? (
+                <Button text={'Wrong Network !'} bgColor={ButtonColor.Pink} disabled={true} />
+              ) : (
+                <></>
+              )}
+            </div>
+          </Card>
+        )}
+        {/* CLAIM Proof of Vote */}
+        {isRoundOver && (
+          <Card
+            bgColor={CardBgColor.White}
+            borderRadius={CardBorderRadius.thirty}
+            classNames={classes.sidebarContainerCard}
+          >
+            <div className={classes.content}>
+              <ClaimPOVModule />
+              {isRoundOver && !account && (
+                <Button text={'Connect to claim'} bgColor={ButtonColor.Pink} onClick={connect} />
+              )}
+
+              {/* IF VOTER */}
+              {isRoundOver && account && chainId === Number(CHAIN_ID) && voter ? (
+                <Button
+                  text={loading ? 'Loading...' : 'Mint Proof of Vote'}
+                  bgColor={ButtonColor.Purple}
+                  onClick={() => mintProofOfVote()}
+                  disabled={loading}
+                />
+              ) : (
+                <></>
+              )}
+
+              {/* IF NOT VOTER */}
+              {isRoundOver && account && chainId === Number(CHAIN_ID) && !voter ? (
+                <Button text={'Not Voter'} bgColor={ButtonColor.Purple} disabled={true} />
               ) : (
                 <></>
               )}

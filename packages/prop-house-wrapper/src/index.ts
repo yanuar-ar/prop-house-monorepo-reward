@@ -260,4 +260,28 @@ export class PropHouseWrapper {
       throw e.response.data.message;
     }
   }
+
+  //====================== Proof of Vote =====================================================
+
+  async checkVoter(address: string, id: number) {
+    try {
+      return (
+        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}/voter?id=${id}&address=${address}`)
+      ).data;
+    } catch (e: any) {
+      throw e.response.data.message;
+    }
+  }
+
+  async createMintPOV(address: string, id: number) {
+    try {
+      return (
+        await axios.get(
+          `${process.env.REACT_APP_REWARD_API_URI}/mintpov?id=${id}&address=${address}`,
+        )
+      ).data;
+    } catch (e: any) {
+      throw e.response.data.message;
+    }
+  }
 }

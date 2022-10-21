@@ -1,1 +1,2 @@
-require('./deploy');
+require('./deploypov');
+require('./deploypow');

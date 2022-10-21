@@ -9,8 +9,19 @@ const SuccessModal: React.FC<{
   numPropsVotedFor: number;
   setShowSuccessModal: Dispatch<SetStateAction<boolean>>;
   voteModal: boolean;
+  title?: string;
+  message?: string;
+  image?: string;
 }> = props => {
-  const { showSuccessModal, setShowSuccessModal, numPropsVotedFor, voteModal } = props;
+  const {
+    showSuccessModal,
+    setShowSuccessModal,
+    numPropsVotedFor,
+    voteModal,
+    title,
+    message,
+    image,
+  } = props;
 
   return (
     <Modal
@@ -20,7 +31,7 @@ const SuccessModal: React.FC<{
     >
       <div className={classes.container}>
         <div className={classes.imgContainer}>
-          <img src={voteModal ? '/rednoggles.png' : '/goldennoggles.png'} alt="noggles" />
+          <img src={voteModal ? '/rednoggles.png' : `/${image}`} alt="noggles" />
         </div>
 
         <div className={classes.titleContainer}>
@@ -34,10 +45,8 @@ const SuccessModal: React.FC<{
             </>
           ) : (
             <>
-              <p className={classes.modalTitle}>Mint Success</p>
-              <p className={classes.modalSubtitle}>
-                You've successfully mint Proof of Win. Enjoy your Golden Noggle.
-              </p>
+              <p className={classes.modalTitle}>{title}</p>
+              <p className={classes.modalSubtitle}>{message}</p>
             </>
           )}
         </div>
