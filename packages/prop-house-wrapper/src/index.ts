@@ -242,7 +242,9 @@ export class PropHouseWrapper {
   async checkWinner(address: string, id: number) {
     try {
       return (
-        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}?id=${id}&address=${address}`)
+        await axios.get(
+          `${process.env.REACT_APP_REWARD_API_URI}/winner?id=${id}&address=${address}`,
+        )
       ).data;
     } catch (e: any) {
       throw e.response.data.message;
@@ -252,7 +254,7 @@ export class PropHouseWrapper {
   async createMint(address: string, id: number) {
     try {
       return (
-        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}?id=${id}&address=${address}`)
+        await axios.get(`${process.env.REACT_APP_REWARD_API_URI}/mint?id=${id}&address=${address}`)
       ).data;
     } catch (e: any) {
       throw e.response.data.message;
