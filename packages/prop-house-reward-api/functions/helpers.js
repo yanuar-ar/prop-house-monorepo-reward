@@ -6,6 +6,10 @@ const auctionQuery = id => gql`
       id
       numWinners
       status
+      community {
+        name
+        id
+    }
       proposals {
         address
         voteCount
@@ -17,7 +21,7 @@ const auctionQuery = id => gql`
 
 const checkWinner = async (id, address) => {
   const { auction } = await request(process.env.GRAPHQL_URL, auctionQuery(id));
-  const { proposals } = auction;
+  const { proposals, status, community } = auction;
 
   const winners = [];
 
@@ -28,10 +32,16 @@ const checkWinner = async (id, address) => {
     .slice(0, auction.numWinners)
     .map(p => winners.push(p.address));
 
+  // only community =1
+  let winner = false;
+  if (status == 'Closed' && community.id == 1) {
+    winners.includes(address);
+  }
+
   return {
     id: id,
     address: address,
-    winner: true, //winners.includes(address),
+    winner: winner,
   };
 };
 
