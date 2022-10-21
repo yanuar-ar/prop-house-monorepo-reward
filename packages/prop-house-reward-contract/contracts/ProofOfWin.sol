@@ -19,7 +19,7 @@ contract ProofOfWin is ERC1155, EIP712, Ownable, ERC1155Burnable, ERC1155Supply 
     address public signer;
 
     //base token URI
-    string public baseTokenURI;
+    mapping(uint256 => string) public baseTokenURI;
 
     // has minted
     mapping(uint256 => mapping(address => uint256)) public hasMinted;
@@ -64,7 +64,7 @@ contract ProofOfWin is ERC1155, EIP712, Ownable, ERC1155Burnable, ERC1155Supply 
     /// @dev See {IERC721Metadata-tokenURI}
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
         require(exists(tokenId), 'Token does not exists !');
-        return bytes(baseTokenURI).length > 0 ? string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId))) : '';
+        return bytes(baseTokenURI[tokenId]).length > 0 ? string(abi.encodePacked(baseTokenURI[tokenId])) : '';
     }
 
     /// @notice The IPFS URI of contract-level metadata.
@@ -77,8 +77,8 @@ contract ProofOfWin is ERC1155, EIP712, Ownable, ERC1155Burnable, ERC1155Supply 
     //*********************************************************************//
 
     // token URI
-    function setBaseURI(string calldata _baseTokenURI) external onlyOwner {
-        baseTokenURI = _baseTokenURI;
+    function setBaseURI(uint256 tokenId, string calldata _baseTokenURI) external onlyOwner {
+        baseTokenURI[tokenId] = _baseTokenURI;
     }
 
     /// @notice Set EIP-712 signer address

@@ -47,9 +47,9 @@ describe('Prop of Win Testing', async () => {
     });
 
     it('should set token URI', async () => {
-      await proofOfWin.setBaseURI('ipfs://qm6yUiaiak/');
+      await proofOfWin.setBaseURI(ethers.BigNumber.from('1'), 'ipfs://qm6yUiaiak/');
 
-      expect(await proofOfWin.baseTokenURI()).to.eq('ipfs://qm6yUiaiak/');
+      expect(await proofOfWin.baseTokenURI(ethers.BigNumber.from('1'))).to.eq('ipfs://qm6yUiaiak/');
     });
   });
 
